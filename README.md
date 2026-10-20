@@ -1,72 +1,79 @@
 # Athletic Sales Analysis
 
-## Background
+A repeatable sales report showing which cities, retailers, and months sell the most.
 
-This project analyzes sales data to gain insights into the sales of athletic wear across various cities in the U.S. over the years 2020 and 2021. The analysis focuses on identifying the cities with the highest sales figures, the top-performing retailers, and the periods with peak sales in women's athletic footwear.
+The report combines two years of U.S. athletic footwear and apparel sales (2020 and 2021, 9,643 transactions) and answers three questions: where sales are strongest, which retailers drive them, and when they peak. Every number below comes from running [`notebooks/athletic_sales_analysis.ipynb`](notebooks/athletic_sales_analysis.ipynb).
 
-## Requirements
+## Findings
 
-This analysis comprises several steps to combine, clean, and analyze the sales data.
+### Top cities
 
-### 1. Combine and Clean the Data
+| Rank | City | Total sales | Units sold |
+|---|---|---|---|
+| 1 | New York, NY | $39,801,235 | 111,954 |
+| 2 | San Francisco, CA | $33,973,228 | 85,478 |
+| 3 | Miami, FL | $31,600,863 | 73,135 |
 
-- **Import Libraries and Dependencies:**
-   ```python
-   import pandas as pd
-   import os
-   ```
+By units sold, Houston, TX ranks second (90,322 units) but drops out of the top 3 by dollars: it sells volume at lower prices.
 
-- **Read the CSV files into DataFrames:**
-   ```python
-   df_2020 = pd.read_csv('path_to_directory/athletic_sales_2020.csv')
-   df_2021 = pd.read_csv('path_to_directory/athletic_sales_2021.csv')
-   ```
+![Top 10 cities by total sales](images/top_cities.png)
 
-- **Check Data Types and Null Values:**
-   After loading the data, ensure that columns in both DataFrames match in name and data type. Combine the DataFrames using:
-   ```python
-   combined_df = pd.concat([df_2020, df_2021], ignore_index=True)
-   ```
+### Top retailers
 
-- **Convert `invoice_date` to a Datetime Type:**
-   ```python
-   combined_df['invoice_date'] = pd.to_datetime(combined_df['invoice_date'])
-   ```
+| Rank | Retailer | Total sales |
+|---|---|---|
+| 1 | West Gear | $242,398,341 |
+| 2 | Foot Locker | $220,094,720 |
+| 3 | Sports Direct | $182,470,997 |
 
-### 2. Determine which Region Sold the Most Products
+The single strongest retailer-city pair is **West Gear in San Francisco** ($32,794,405). West Gear in San Francisco also sold the most women's athletic footwear (12,107 units), ahead of Foot Locker in New York (10,996) and Kohl's in Los Angeles (10,826).
 
-- Utilize either `groupby` or `pivot_table` to summarize the data by region, state, and city, renaming the aggregated column to represent the total number of products sold.
+![Total sales by retailer](images/retailer_sales.png)
 
-### 3. Determine which Region had the Most Sales
+### Peak periods
 
-- Again, use `groupby` or `pivot_table`, this time focusing on total sales.
+| Rank | Month | Total sales (all products) |
+|---|---|---|
+| 1 | July 2021 | $78,334,681 |
+| 2 | December 2021 | $77,815,430 |
+| 3 | August 2021 | $72,288,221 |
 
-### 4. Determine which Retailer had the Most Sales
+Two windows stand out: **mid-summer** and **the December holidays**. Women's athletic footwear follows the same pattern. Its best single day was July 16, 2021 ($1,521,825) and its best week ended December 19, 2021 ($3,098,970).
 
-- Summarize the data by retailer while capturing sales totals.
+![Total sales by month](images/monthly_sales.png)
 
-### 5. Determine which Retailer Sold the Most Women's Athletic Footwear
+## What this means for a client
 
-- Filter the combined DataFrame to focus on women's athletic footwear sales before summarizing.
+The value here is not one set of answers. The value is that the questions are built once and can be re-run on new data.
 
-### 6. Determine the Day with the Most Women's Athletic Footwear Sales
+1. **Write the report once, as a system.** The notebook is a fixed pipeline: load the sales files, clean them, and produce the same tables and charts every time. Drop next month's CSV into `data/`, re-run, and the numbers update with no rework.
+2. **Let AI summarize it each month.** The notebook's output tables are small and structured, so an AI assistant can read them and write the plain-language update: which cities moved, which retailer gained, whether the summer and December peaks held. This is the "Second Brain" idea. The system does the counting, the AI writes the summary, and a person reviews it and decides.
 
-- Create a pivot table with `invoice_date` as the index and `total_sales` as values, then resample to find daily sales.
+The AI summary step is a proposed next step. It is not built in this repo.
 
-### 7. Determine the Week with the Most Women's Athletic Footwear Sales
+## Limitations
 
-- Resample the previously created pivot table to find weekly sales totals.
+- **The two years are not comparable in size.** 2020 has 1,297 rows and 2021 has 8,346. The jump in the monthly chart likely reflects how much data was recorded, not real growth. That is also why every top period falls in 2021.
+- **Sales, not profit.** Rankings use `total_sales` (revenue). The data has an `operating_profit` column that this report does not analyze.
+- **`retailer_id` is not reliable.** The same ID appears under several retailer names, so the report groups by retailer name instead.
+- **Bootcamp dataset.** The data came with a Columbia data analytics bootcamp assignment. Treat it as practice data, not a real company's books.
 
-For example, that might look like:
-```python
-weekly_sales_resampled = daily_sales_resampled.resample('W').sum()
-top_weekly_sales = weekly_sales_resampled.sort_values(by='Total Sales', ascending=False)
+## Run it yourself
+
+```bash
+pip install -r requirements.txt
+cd notebooks
+jupyter notebook athletic_sales_analysis.ipynb   # then Run All
 ```
 
-## Sources
+Running the notebook top to bottom regenerates the charts in `images/`.
 
-- **Pandas Library**: [Pandas Documentation](https://pandas.pydata.org/docs/)
-- **OS Library**: [OS Module Documentation](https://docs.python.org/3/library/os.html)
+## Project structure
 
+```
+data/        2020 and 2021 sales CSVs
+notebooks/   athletic_sales_analysis.ipynb (analysis + chart generation)
+images/      charts used in this README
+```
 
-
+Built with pandas and matplotlib by La Raven Gordon.
